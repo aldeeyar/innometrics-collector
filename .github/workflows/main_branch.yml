@@ -8,6 +8,8 @@ on:
   push:
     branches:
       - main
+  repository_dispatch:
+    type: common-trigger
 
 jobs:
   tests:
@@ -32,16 +34,21 @@ jobs:
   linter:
     name: Linter
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
+      statuses: write
+
     steps:
       - name: Chekc out the repo
         uses: actions/checkout@v3
 
-      - name: Run linter
-        uses: dbelyaev/action-checkstyle@v0.7.4
-        with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          level: warning
+      - name: Lint Code Base
+        uses: github/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   push_to_registry:
     name: Push Docker image to Docker Hub
